@@ -1,23 +1,119 @@
 <!DOCTYPE html>
 <html>
+  <head>
     <title>AtmosphericX</title>
     <link rel="icon" href="/assets/media/dashboard/favicon.ico" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
-    <link rel="stylesheet" href="../widgets/header@widget/index.css">
+
+    <!-- styles -->
     <link rel="stylesheet" href="../../assets/styles/variables.css">
+    <link rel="stylesheet" href="../widgets/header@widget/index.css">
+
+    <!-- fonts for nicer title -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+    <!-- core scripts (unchanged) -->
     <script src="../../assets/javascript/library.js"></script>
     <script src="../../assets/javascript/elements.js"></script>
     <script src="../../assets/javascript/alerts.js"></script>
-    <body><p id="header" class="text">Awaiting Callback...</p></body>
+  </head>
+
+  <body>
+    <!-- 200 × 130 transparent container -->
+    <div class="wx-shell">
+      <p id="wx-title" class="wx-title">Awaiting&nbsp;Callback…</p>
+      <p id="wx-expires" class="wx-expires">–</p>
+    </div>
     <script>
-        let library = new Library()
-        library.createWebsocketSession([`public`, `active`, `manual`, `header`]).then(() => {
-            let alert_class = new Alerts(library)
-            let element_class = new Elements(library)
-            document.addEventListener('onCacheUpdate', async (event) => {
-                alert_class.syncAlerts()
-                element_class.updateHeaders(`header`)
-            })
-        })
+    const channel = new BroadcastChannel('wx-sync');
+    const shell   = document.querySelector('.wx-shell');
+    const titleEl = document.getElementById('wx-title');
+    const expEl   = document.getElementById('wx-expires');
+
+    function fitText(el, max = 56, min = 12){
+      el.style.fontSize = max + 'px';
+      const box = el.parentElement;
+      while (
+        el.scrollWidth  > box.clientWidth  - 10 ||
+        el.scrollHeight > box.clientHeight - 6
+      ){
+        if (--max <= min) break;
+        el.style.fontSize = max + 'px';
+      }
+    }
+
+    /* === same helper your separate widget uses === */
+    function formatTimeRemaining(expires){
+      const now  = Date.now();
+      const end  = new Date(expires).getTime();
+      const diff = end - now;
+      if (diff <= 0) return 'Expired';
+
+      const totalMinutes = Math.floor(diff / 60000);
+      const hours   = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      let out = 'Expires in ';
+      if (hours) out += `${hours} hr${hours!==1?'s':''} `;
+      out += `${minutes} min`;
+      return out.trim();
+    }
+    /* ============================================= */
+
+    let expiresAt = null, tick = null;
+
+    channel.addEventListener('message', e=>{
+      if (e.data.type !== 'warning-selected') return;
+
+      shell.style.backgroundColor = e.data.dark;
+      titleEl.textContent         = e.data.name;
+      fitText(titleEl, 56, 20);
+
+      expiresAt && clearInterval(tick);  // stop old countdown
+      expiresAt = e.data.expires;
+      updateTimer();
+      tick = setInterval(updateTimer, 1000);
+    });
+
+    function updateTimer(){
+      if (!expiresAt) return;
+      expEl.textContent = formatTimeRemaining(expiresAt);
+      fitText(expEl);
+      if (Date.now() >= expiresAt) clearInterval(tick);
+    }
+
+    /* initial “Awaiting Callback…” sizing */
+    fitText(titleEl);
     </script>
+    <!-- <script>
+    const channel = new BroadcastChannel('wx-sync');
+    const shell   = document.querySelector('.wx-shell');
+    const titleEl = document.getElementById('wx-title');
+
+    /* helper: shrink font until it fits */
+    function fitText(el, max = 56, min = 12){   // size in px
+      el.style.fontSize = max + 'px';
+      const box = el.parentElement;
+
+      while (el.scrollWidth > box.clientWidth - 10   // side padding
+          || el.scrollHeight > box.clientHeight - 6  // top/btm padding
+          ) {
+        max -= 1;
+        if (max <= min) break;
+        el.style.fontSize = max + 'px';
+      }
+    }
+
+    channel.addEventListener('message', e=>{
+      if(e.data.type==='warning-selected'){
+        shell.style.backgroundColor = e.data.dark;   // whole square colour
+        titleEl.textContent = e.data.name;
+        fitText(titleEl);                             // make it as big as fits
+      }
+    });
+
+    /* initial fit for "Awaiting Callback…" */
+    fitText(titleEl);
+  </script> -->
+  </body>
 </html>

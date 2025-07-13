@@ -1,2 +1,38 @@
-body,html{display:flex;justify-content:center;align-items:center;background-color:var(--header-widget-background);margin:0;overflow:hidden}
-.text{font-size:var(--header-widget-font-size);font-weight:var(--header-widget-font-weight);width:100%;text-align:center;overflow:hidden;color:var(--header-widget-color);word-wrap:break-word;margin-bottom:0;position:absolute;top:25%;left:50%;transform:translate(-50%,-50%);padding:0 5px 0 5px;text-shadow:var(--header-widget-text-shadow);}
+.wx-shell {
+  width: 200px;
+  height: 130px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;   /* evenly spaced top to bottom */
+  align-items: center;
+  overflow: hidden;
+  background: #2c2c2c;
+  padding: 6px 0;                  /* minimal vertical padding */
+}
+
+.wx-title {
+  margin: 0;
+  text-align: center;
+  line-height: 1.1;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+  word-wrap: break-word;
+  overflow: hidden;
+
+  white-space: normal;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.wx-expires {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  opacity: 0.85;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+}

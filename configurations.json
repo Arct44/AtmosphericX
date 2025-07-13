@@ -57,7 +57,7 @@
                     "tracking_name": "SPOTTER_ATTRIBUTE_HERE",
                     "show_offline": false,
                     "show_idle": false,
-                    "show_active": true,
+                    "show_active": false,
                     "show_streaming": true
                 },
                 "note": "Realtimeirl and spotter network tracking can NOT be used at the same time for tracking. You must choose one or the other."
@@ -86,7 +86,7 @@
                 "endpoint": "https://placefilenation.com/Placefiles/mping_60min.php"
             },
             "spotter_network_reports": {
-                "enabled": true,
+                "enabled": false,
                 "cache_time": 119,
                 "endpoint": "https://www.spotternetwork.org/feeds/reports.txt"
             },
@@ -96,7 +96,7 @@
                 "endpoint": "https://www.grlevelx.com/lsr/lsr_latest.txt"
             },
             "spc_mesoscale_discussions": {
-                "enabled": true,
+                "enabled": false,
                 "cache_time": 119,
                 "endpoint": "https://placefilenation.com/Placefiles/mcd.php"
             },
@@ -132,19 +132,10 @@
             "Destructive Severe Thunderstorm Warning",
             "Confirmed Tornado Warning",
             "Radar Indicated Tornado Warning",
-            "Flash Flood Emergency",
-            "Flash Flood Watch",
-            "Severe Thunderstorm Watch",
-            "Tornado Watch",
-            "Special Marine Warning",
-            "Flash Flood Warning",
-            "Severe Thunderstorm Warning",
             "Tornado Warning",
-            "Snow Squall Warning",
-            "Earthquake Warning",
-            "Hurricane Warning",
-            "Hurricane Watch",
-            "Special Weather Statement"
+            "Severe Thunderstorm Warning",
+            "Flash Flood Emergency",
+            "Flash Flood Warning"
         ],
         "beep_only": false,
         "show_updates": true,
@@ -188,8 +179,8 @@
         "webhook_settings": {
             "enabled": false,
             "discord_webhook": "DISCORD_WEBHOOK_HERE",
-            "webhook_display": "AtmosphericX (Webhook Integration)",
-            "content": "<@&ROLE_ID_HERE>",
+            "webhook_display": "Arct44 Weather",
+            "content": "",
             "webhook_cooldown": 5
         },
         "mail_settings": {
@@ -251,73 +242,43 @@
     "spc_outlooks": [
         {
             "day": 1,
-            "title": "Severe Weather Outlook (Day 1)",
+            "title": "Today's Severe Weather Outlook",
             "source": "https://www.spc.noaa.gov/partners/outlooks/state/swody1.png"
         },
         {
             "day": 2,
-            "title": "Severe Weather Outlook (Day 2)",
+            "title": "Tomorrow's Severe Weather Outlook",
             "source": "https://www.spc.noaa.gov/partners/outlooks/state/swody2.png"
         },
         {
-            "day": 3,
-            "title": "Severe Weather Outlook (Day 3)",
-            "source": "https://www.spc.noaa.gov/partners/outlooks/state/swody3.png"
-        },
-        {
             "day": 1,
-            "title": "Severe Wind Outlook (Day 1)",
+            "title": "Today's Wind Outlook",
             "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody1_WIND.png?"
         },
         {
             "day": 1,
-            "title": "Severe Hail Outlook (Day 1)",
+            "title": "Today's Hail Outlook",
             "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody1_HAIL.png?"
         },
         {
             "day": 1,
-            "title": "Tornado Outlook (Day 1)",
+            "title": "Today's Tornado Outlook",
             "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody1_TORN.png?"
         },
         {
             "day": 2,
-            "title": "Severe Wind Outlook (Day 2)",
+            "title": "Tomorrow's Wind Outlook",
             "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody2_WIND.png?"
         },
         {
             "day": 2,
-            "title": "Severe Hail Outlook (Day 2)",
+            "title": "Tomorrow's Hail Outlook",
             "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody2_HAIL.png?"
         },
         {
             "day": 2,
-            "title": "Tornado Outlook (Day 2)",
+            "title": "Tomorrow's Tornado Outlook",
             "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody2_TORN.png?"
-        },
-        {
-            "day": 4,
-            "title": "Severe Weather Outlook (Day 4)",
-            "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody4_PROB.png"
-        },
-        {
-            "day": 5,
-            "title": "Severe Weather Outlook (Day 5)",
-            "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody5_PROB.png"
-        },
-        {
-            "day": 6,
-            "title": "Severe Weather Outlook (Day 6)",
-            "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody6_PROB.png"
-        },
-        {
-            "day": 7,
-            "title": "Severe Weather Outlook (Day 7)",
-            "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody7_PROB.png"
-        },
-        {
-            "day": 8,
-            "title": "Severe Weather Outlook (Day 8)",
-            "source": "https://www.spc.noaa.gov/partners/outlooks/national/swody8_PROB.png"
         }
     ],
     "third_party_services": [
@@ -369,7 +330,7 @@
     ],
     "widget_settings": {
         "mapbox": {
-            "api_key": "YOUR_MAPBOX_API_KEY_HERE",
+            "api_key": "pk.eyJ1IjoiYXJjdDQ0IiwiYSI6ImNtY3F6cGJjajBoOGcya3E3Z3h3YnM0d3AifQ.sLJHas60M7rnFG1D1KKNjA",
             "spotter_network_settings": {
                 "spotter_scheme": {
                     "default": {
@@ -394,8 +355,8 @@
                     -93.9254114,
                     42.0171798
                 ],
-                "pitch": 30,
-                "bearing": -1,
+                "pitch": 0,
+                "bearing": 0,
                 "preserveDrawingBuffer": true
             }
         },
@@ -415,8 +376,7 @@
                     "Considerable Severe Thunderstorm Warning",
                     "Severe Thunderstorm Warning",
                     "Radar Indicated Tornado Warning",
-                    "Flash Flood Emergency",
-                    "Special Marine Warning"
+                    "Flash Flood Emergency"
                 ]
             }
         },
@@ -460,9 +420,9 @@
             "note": "No configuration needed"
         },
         "alert": {
-            "duration": 8,
+            "duration": 10,
             "max_text_length": 70,
-            "animation_style": "animation: fade 6.0s ease-in-out; animation-fill-mode: forwards; animation-delay: 0s; transition: all 0.3s ease-in-out; opacity: 1;"
+            "animation_style": "animation: fade 10.0s ease-in-out; animation-fill-mode: forwards; animation-delay: 0s; transition: all 0.3s ease-in-out; opacity: 1;"
         }
     },
     "tone_sounds": {
@@ -479,7 +439,7 @@
             "update": "/assets/media/audio/tor/tor-updated.mp3",
             "cancel": "/assets/media/audio/tones/beep-tone.mp3",
             "card": "Tornado Emergency",
-            "siren": true,
+            "siren": false,
             "eas": false,
             "autobeep": true
         },
@@ -490,7 +450,7 @@
             "cancel": "/assets/media/audio/tones/beep-tone.mp3",
             "card": "Particularly Dangerous Situation",
             "siren": false,
-            "eas": true,
+            "eas": false,
             "autobeep": true
         },
         "Flash Flood Emergency": {
@@ -500,7 +460,7 @@
             "cancel": "/assets/media/audio/tones/beep-tone.mp3",
             "card": "Flash Flood Emergency",
             "siren": false,
-            "eas": true,
+            "eas": false,
             "autobeep": true
         },
         "Confirmed Tornado Warning": {
@@ -509,7 +469,7 @@
             "update": "/assets/media/audio/tor/tor-updated.mp3",
             "cancel": "/assets/media/audio/tones/beep-tone.mp3",
             "card": "Confirmed Tornado Warning",
-            "siren": true,
+            "siren": false,
             "eas": false,
             "autobeep": true
         },
@@ -520,7 +480,7 @@
             "cancel": "/assets/media/audio/tones/beep-tone.mp3",
             "card": "Severe Thunderstorm Warning (Destructive)",
             "siren": false,
-            "eas": true,
+            "eas": false,
             "autobeep": true
         },
         "Considerable Severe Thunderstorm Warning": {
@@ -659,8 +619,8 @@
         {
             "type": "Tornado Warning",
             "color": {
-                "light": "rgb(249,56,54)",
-                "dark": "rgb(203,25,25)"
+                "light": "rgb(241,8,0)",
+                "dark": "rgb(165,8,0)"
             }
         },
         {
@@ -680,8 +640,8 @@
         {
             "type": "Severe Thunderstorm Warning",
             "color": {
-                "light": "rgb(248,160,42)",
-                "dark": "rgb(248,106,42)"
+                "light": "rgb(255,165,0)",
+                "dark": "rgb(175,115,0)"
             }
         },
         {

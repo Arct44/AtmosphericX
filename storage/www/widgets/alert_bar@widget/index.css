@@ -1,8 +1,89 @@
-body, html { background-color: rgba(0, 0, 0, 0); margin: 0; float: center; overflow: hidden; }
-.alert-box { display: none; background: var(--alertbar-widget-bg-gradient); border-radius: 8px; color: var(--alertbar-widget-text-color); max-width: 900px; margin: auto; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.973); position: absolute; width: 100%; top: 50%; left: 80%; margin-top: -50px; margin-left: -50%; }
-.alert-header { background: var(--alertbar-widget-header-bg); text-align: var(--alertbar-widget-header-align); font-size: var(--alertbar-widget-header-size); font-weight: var(--alertbar-widget-header-weight); padding: 16px; }
-.alert-body { background: var(--alertbar-widget-body-bg); }
-.row-light { background: var(--alertbar-widget-row-light-bg); display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 16px; box-sizing: border-box; }
-.row-dark { background: var(--alertbar-widget-row-dark-bg); display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 16px; box-sizing: border-box; }
-.left, .right { display: flex; align-items: center; gap: 6px; }
-.alert-icon { width: 200px; height: 200px; }
+body, html {
+  background-color: rgba(0, 0, 0, 0);
+  margin: 0;
+  float: center;
+  overflow: hidden;
+}
+
+.alert-box {
+  display: none;
+  background: var(--alertbar-widget-bg-gradient);
+  border-radius: 6px;
+  color: var(--alertbar-widget-text-color);
+  max-width: 640px;
+  width: auto;
+  margin: 0;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.973);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+}
+
+.alert-header {
+  background: var(--alertbar-widget-header-bg);
+  text-align: center;
+  font-size: calc(var(--alertbar-widget-header-size) * 0.85); /* scale down header */
+  font-weight: var(--alertbar-widget-header-weight);
+  padding: 12px; /* was 16px */
+}
+
+.alert-body {
+  background: var(--alertbar-widget-body-bg);
+}
+
+/* ROW STYLING */
+.row-light,
+.row-dark {
+  display: flex;
+  align-items: left;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 12px; /* was 8px 16px */
+  box-sizing: border-box;
+}
+
+.row-light {
+  background: var(--alertbar-widget-row-light-bg);
+}
+
+.row-dark {
+  background: var(--alertbar-widget-row-dark-bg);
+}
+
+/* INNER ALIGNMENT */
+.left,
+.right {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px; /* was 6px */
+}
+
+/* ICON SIZE (unchanged) */
+.alert-icon {
+  width: 200px;
+  height: 200px;
+}
+
+/* ----------- FLEX OVERRIDES FOR STACKED LINES ----------- */
+
+.alert-body > div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 6px 12px; /* match row padding above */
+  box-sizing: border-box;
+}
+
+/* Auto-striping still applies */
+.alert-body > div:nth-child(odd)  { background: var(--alertbar-widget-row-dark-bg); }
+.alert-body > div:nth-child(even) { background: var(--alertbar-widget-row-light-bg); }
+
+.alert-body .left,
+.alert-body .right {
+  flex: 1 1 100%;
+  align-items: flex-start;
+  gap: 4px;
+}

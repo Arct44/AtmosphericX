@@ -8,13 +8,15 @@
     <script src="../../assets/javascript/library.js"></script>
     <body> <div class="p_boxdark" style="height: 1920px; width: 1080px;"></div></body>
     <script>
-        let library = new Library()
-        library.createWebsocketSession([`public`, `active`, `manual`]).then(() => {
-            let alert_class = new Alerts(library)
-            document.addEventListener('onCacheUpdate', async (event) => {
-                alert_class.syncAlerts()
-                alert_class.triggerDynamicColors()
-            })
-        })
+    const channel = new BroadcastChannel('wx-sync');
+
+    channel.addEventListener('message', (event) => {
+      if (event.data.type === 'warning-selected') {
+        document.querySelectorAll('.p_boxlight')
+          .forEach(b => b.style.backgroundColor = event.data.light);
+        document.querySelectorAll('.p_boxdark')
+          .forEach(b => b.style.backgroundColor = event.data.dark);
+      }
+    });
     </script>
 </html>

@@ -3,27 +3,53 @@
 /*
               _                             _               _     __   __
          /\  | |                           | |             (_)    \ \ / /
-        /  \ | |_ _ __ ___   ___  ___ _ __ | |__   ___ _ __ _  ___ \ V / 
-       / /\ \| __| '_ ` _ \ / _ \/ __| '_ \| '_ \ / _ \ '__| |/ __| > <  
-      / ____ \ |_| | | | | | (_) \__ \ |_) | | | |  __/ |  | | (__ / . \ 
+        /  \ | |_ _ __ ___   ___  ___ _ __ | |__   ___ _ __ _  ___ \ V /
+       / /\ \| __| '_ ` _ \ / _ \/ __| '_ \| '_ \ / _ \ '__| |/ __| > <
+      / ____ \ |_| | | | | | (_) \__ \ |_) | | | |  __/ |  | | (__ / . \
      /_/    \_\__|_| |_| |_|\___/|___/ .__/|_| |_|\___|_|  |_|\___/_/ \_\
-                                     | |                                 
-                                     |_|                                                                                                                
+                                     | |
+                                     |_|
     Written by: k3yomi@GitHub
-    Version: v7.0.0                              
+    Version: v7.0.0
 */
 
 
 /**
   * @class Alerts
   * @description A class for managing and displaying alerts in a UI, synchronizing alerts from a remote source, and processing them.
-  * 
+  *
   * This class handles syncing alerts, displaying them with GIFs and audio cues, updating UI colors dynamically, and populating a table with active alerts.
-  * 
+  *
   * The alerts are processed in queues, and the UI elements reflect the most relevant or active alert types.
   */
+function formatLocalTime(isoString) {
+    const options = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZoneName: 'short'
+    };
+    return new Date(isoString).toLocaleString(undefined, options);
+}
 
-class Alerts { 
+function getTimeRemaining(isoString) {
+    const now = new Date();
+    const future = new Date(isoString);
+    const diffMs = future - now;
+    if (isNaN(future.getTime())) return 'Invalid time';
+    if (diffMs <= 0) return 'Expired';
+
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 60) return `${mins} minutes remaining`;
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    return `${hrs}h ${rem}m remaining`;
+}
+
+class Alerts {
     constructor(library, streamerMode=false) {
         this.library = library
         this.storage = this.library.storage
@@ -33,49 +59,79 @@ class Alerts {
         document.addEventListener('onCacheUpdate', (event) => {})
     }
 
+    setColorSchemeByAlert(alert) {
+      if (!alert || !alert.details || !alert.details.name) return;
+
+      const scheme = this.storage.configurations.scheme;
+      const matched = scheme.find(s => alert.details.name.includes(s.type))
+                  || scheme.find(s => s.type === 'Default');
+      if (!matched) return;
+
+      for (const box of document.getElementsByClassName('p_boxlight')) {
+        box.style.backgroundColor = matched.color.light;
+      }
+      for (const box of document.getElementsByClassName('p_boxdark')) {
+        box.style.backgroundColor = matched.color.dark;
+      }
+    }
+    // setColorSchemeByAlert(alert) {
+      // let colorScheme = this.storage.configurations.scheme;
+      // let matchedScheme = colorScheme.find(type => alert.details.name.includes(type.type)) ||
+                          // colorScheme.find(type => type.type === "Default");
+      // if (!matchedScheme) return;
+      // let lightBoxes = document.getElementsByClassName("p_boxlight");
+      // let darkBoxes = document.getElementsByClassName("p_boxdark");
+      // for (let box of lightBoxes) {
+        // box.style.backgroundColor = matchedScheme.color.light;
+      // }
+      // for (let box of darkBoxes) {
+        // box.style.backgroundColor = matchedScheme.color.dark;
+      // }
+    // }
+
     /**
       * @function syncAlerts
       * @description Synchronizes alerts from the storage, processes them, and then sends them to the queue. Nothing more
       * nothing less. I recently updated this function to be more efficient and not require async/await for functionality.
       */
 
-    syncAlerts = function(isDashboard=false) { 
+    syncAlerts = function(isDashboard=false) {
         if (this.storage.alertsQueue == undefined) { this.storage.alertsQueue = [] }
         if (this.storage.alertManual == undefined) { this.storage.alertManual = `` }
         if (this.storage.lastQueue == undefined) { this.storage.lastQueue = [] }
         if (this.storage.emergencyAlerts == undefined) { this.storage.emergencyAlerts = [] }
-        
-        let manualAlerts = this.storage.manual 
+
+        let manualAlerts = this.storage.manual
         let activeAlerts = this.storage.active
-        if (manualAlerts.length != 0) { 
+        if (manualAlerts.length != 0) {
             let data = manualAlerts
             if (this.storage.alertManual != data.details.name + `-` + data.details.locations + `-` + data.details.type) {
                 this.storage.alertManual = data.details.name + `-` + data.details.locations + `-` + data.details.type
                 if (!data.metadata.ignored) { this.storage.alertsQueue.push(data) }
-                if (isDashboard) { 
+                if (isDashboard) {
                     this.createDashboardPriorityAlert(data)
-                    this.library.createNotification(`<span style="color: red;">${data.details.name}</span> has been <span style="color: green;">${data.details.type}</span>`) 
+                    this.library.createNotification(`<span style="color: red;">${data.details.name}</span> has been <span style="color: green;">${data.details.type}</span>`)
                 }
             }
             let isInActive = this.storage.active.find(x => x.details.name == data.details.name && x.details.locations == data.details.locations)
             if (isInActive == undefined) { this.storage.active.push(data) }
         }
-        if (this.storage.active.length != 0) { 
-            for (let i = 0; i < this.storage.active.length; i++) { 
+        if (this.storage.active.length != 0) {
+            for (let i = 0; i < this.storage.active.length; i++) {
                 let data = this.storage.active[i]
                 let emergencyAlertPlayed = this.storage.emergencyAlerts.find(x => x == `${data.details.name}-${data.details.locations}`)
                 let isDuplicate = this.storage.lastQueue.find(x => x.details.name == data.details.name && x.details.description == data.details.description && x.details.type == data.details.type && x.details.issued == data.details.issued && x.details.expires == data.details.expires)
                 let currentTime = Date.now();
                 let timeCheck = currentTime - new Date(data.details.issued).getTime();
                 let canBePushed = (timeCheck < 200000 && isDuplicate == undefined) ? true : false;
-                let canBeCleared = (timeCheck > 200000 && isDuplicate != undefined) ? true : false;  
+                let canBeCleared = (timeCheck > 200000 && isDuplicate != undefined) ? true : false;
                 if (data.metadata.ignored) { continue }
                 if (emergencyAlertPlayed != undefined) { data.metadata.siren = false; data.metadata.eas = false; }
                 if (data.metadata.siren == true || data.metadata.eas == true) { this.storage.emergencyAlerts.push(`${data.details.name}-${data.details.locations}`) } // Add to sound alerts if not already in the list
-                if (canBePushed) { 
-                    if (isDashboard) { 
+                if (canBePushed) {
+                    if (isDashboard) {
                         this.createDashboardPriorityAlert(data)
-                        this.library.createNotification(`<span style="color: red;">${data.details.name}</span> has been <span style="color: green;">${data.details.type}</span>`) 
+                        this.library.createNotification(`<span style="color: red;">${data.details.name}</span> has been <span style="color: green;">${data.details.type}</span>`)
                     }
                     this.storage.alertsQueue.push(data)
                     this.storage.lastQueue.push(data)
@@ -94,7 +150,7 @@ class Alerts {
 
     /**
       * Creates a dashboard priority alert similar to NOAA Weather Radio Alerts. Starts off with the Uniden Siren and gives a confirmation if you want to proceed to listen to the alert with
-      * text to speech. 
+      * text to speech.
       * @param {Object} alert - The alert object containing details about the alert.
       */
 
@@ -144,15 +200,15 @@ class Alerts {
         })
         this.storage.isPriorityAlertPlaying = true;
         setTimeout(() => { this.storage.isPriorityAlertPlaying = false; }, 10 * 1000);
-    }  
+    }
 
 
     /**
       * @function createAnimatedAlert
       * @description This is the version 2 of the alert function. This doesn't use a GIF but rather a div and animations...
-      * This is a more efficient way instead of calling 90 different gifs and wasting resources. Plus we can use CSS and style 
+      * This is a more efficient way instead of calling 90 different gifs and wasting resources. Plus we can use CSS and style
       * the alert to your liking!
-      * 
+      *
       * @param {Object} alert - The alert object containing details about the alert.
       */
 
@@ -162,7 +218,7 @@ class Alerts {
             let timeIssuedString = `Invalid Time`
             let configuration = this.storage.configurations.widget_settings.alert;
             let maxDescriptionLength = configuration.max_text_length;
-            let eventName = alert.details.name 
+            let eventName = alert.details.name
             let eventStatus = alert.details.type
             let locationsImpacted = alert.details.locations
             let eventIssued = alert.details.issued == undefined ? `No date found` : alert.details.issued
@@ -180,7 +236,7 @@ class Alerts {
             if (isNaN(eventExpiresTime.unix)) { timeExpiresString = `Invalid Time` }
             if (isNaN(eventIssuedTime.unix)) { timeIssuedString = `Invalid Time` }
 
-            let expiresHours = Math.floor((new Date(eventExpiresTime.unix * 1000) - new Date()) / 3600000);  
+            let expiresHours = Math.floor((new Date(eventExpiresTime.unix * 1000) - new Date()) / 3600000);
             if (expiresHours < 0) { timeExpiresString = `Now...`}
             if (expiresHours > 9999) { timeExpiresString = `Until further notice...`}
 
@@ -205,13 +261,13 @@ class Alerts {
             let domIssued = document.getElementById('event-issued-time');
             let domSender = document.getElementById('event-sender');
             let domTags = document.getElementById('event-tags');
-  
+
             domNotification.style.display = 'block';
-            domNotification.style.animation = 'fadeInDown 0.9s ease-in-out';
+            domNotification.style.animation = 'fadeIn 0.6s ease-in-out';
             domNotification.style.boxShadow = `0 0 20px ${colorDark}`;
-            domNotification.style.background = `linear-gradient(to bottom, ${colorLight}, ${colorDark})`; 
+            domNotification.style.background = `linear-gradient(to bottom, ${colorLight}, ${colorDark})`;
             domHeader.style.backgroundColor = colorDark;
-            
+
             domTitle.textContent = `${eventName} (${eventStatus})`;
             domLocations.innerHTML = `${locationsImpacted || 'N/A'}`;
             domMaxHail.textContent = `${maxHailSize || 'N/A'}`;
@@ -219,22 +275,28 @@ class Alerts {
             domTornado.textContent = `${tornadoIndicator || 'N/A'}`;
             domDmg.textContent = `${damageThreat || 'N/A'}`;
             domSender.textContent = `${fullSendName || 'N/A'}`;
-            domExpires.innerHTML = `${timeExpiresString || 'N/A'}`;
-            domIssued.innerHTML = `${timeIssuedString || 'N/A'}`;
+            const issuedFormatted = formatLocalTime(eventIssued);
+            const expiresCountdown = getTimeRemaining(eventExpires);
+
+            domIssued.innerHTML = `${issuedFormatted}`;
+            domExpires.innerHTML = `${expiresCountdown}`;
             domTags.innerHTML = `${eventTags || 'N/A'}`;
+
+            this.pruneRowsAndStripe();
+
             setTimeout(() => {
                 domNotification.style.animation = 'fadeOut 1s ease-in-out';
                 setTimeout(() => { domNotification.style.display = 'none'; domNotification.style.backgroundColor = ''; domNotification.style.animation = ''; }, 900);
             }, (this.storage.configurations.widget_settings.alert.duration - 0.8) * 1000);
-        }  
-        setTimeout(() => { this.storage.isQueryRunning = false; }, this.storage.configurations.widget_settings.alert.duration * 1000);
+        }
+        setTimeout(() => { this.storage.isQueryRunning = false; }, this.storage.configurations.widget_settings.alert.duration * 10000);
     }
 
 
     /**
       * @function triggerAlertQueue
       * @description Processes and plays the next alert in the provided queue with associated media and UI effects.
-      * 
+      *
       * @async
       * @param {Array} alertQueue - The queue of alerts to process.
       */
@@ -246,8 +308,8 @@ class Alerts {
         let nextAlert = this.storage.alertsQueue.length - 1
         let currentAlert = this.storage.alertsQueue[nextAlert]
         this.createAnimatedAlert(currentAlert)
-        if (!currentAlert.metadata.onlyBeep) { 
-            if (currentAlert.metadata.autobeep) { 
+        if (!currentAlert.metadata.onlyBeep) {
+            if (currentAlert.metadata.autobeep) {
                 this.library.playAudio(this.storage.configurations.tone_sounds.beep, false)
                 await this.library.createTimeout(1300)
                 this.library.playAudio(currentAlert.metadata.audio, false)
@@ -256,7 +318,7 @@ class Alerts {
             }
             if (currentAlert.metadata.eas || currentAlert.metadata.siren) {
                 await this.library.createTimeout(3800)
-                this.library.playAudio(currentAlert.metadata.eas ? this.storage.configurations.tone_sounds.eas : this.storage.configurations.tone_sounds.siren, false) 
+                this.library.playAudio(currentAlert.metadata.eas ? this.storage.configurations.tone_sounds.eas : this.storage.configurations.tone_sounds.siren, false)
             }
         } else {
             this.library.playAudio(this.storage.configurations.tone_sounds.beep, false)
@@ -276,7 +338,7 @@ class Alerts {
         let light = document.getElementsByClassName(`p_boxlight`)
         let dark = document.getElementsByClassName(`p_boxdark`)
         let colorScheme = this.storage.configurations.scheme;
-        let alertsScheme = colorScheme.filter(type => { return this.storage.active.some(alert => alert.details.name.includes(type.type));});    
+        let alertsScheme = colorScheme.filter(type => { return this.storage.active.some(alert => alert.details.name.includes(type.type));});
         if (this.storage.active.length == 0 || alertsScheme.length == 0) {
             let default_c = colorScheme.find(type => {return type.type == `Default`})
             for (let x = 0; x < light.length; x++) { light[x].style.backgroundColor = default_c.color.light }
@@ -285,7 +347,7 @@ class Alerts {
         }
         colorScheme.forEach((color) => { color.count = this.storage.active.filter(x => x.details.name.includes(color.type)).length});
         colorScheme.find(type => {return type.count > 0; }) || types[types.length - 1];
-        let highest = colorScheme.find(type => {return type.count > 0; }) || colorScheme[colorScheme.length - 1];  
+        let highest = colorScheme.find(type => {return type.count > 0; }) || colorScheme[colorScheme.length - 1];
         for (let x = 0; x < light.length; x++){
             light[x].style.backgroundColor = highest.color.light
         }
@@ -299,7 +361,7 @@ class Alerts {
       * @description Populates the portable table and /widgets/table with active alerts sorted by the most recent.
       * This really doesn't have a purpose other than to show the most recent alerts in a table format for the portable
       * layout. Feel free to change the maximum number of alerts to show and the maximum number of characters per row.
-      * 
+      *
       * @param {string} id - The ID of the table element to populate with alerts.
       */
 
@@ -324,4 +386,41 @@ class Alerts {
             eventLocations.innerHTML = `...and ${sortByIssued.length - this.storage.configurations.widget_settings.table.max_alerts_shown} more`;
         }
     }
+
+    pruneRowsAndStripe = () => {
+      const body = document.querySelector('.alert-body');
+      if (!body) return;
+
+      const darkBG  = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--alertbar-widget-row-dark-bg').trim();
+      const lightBG = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--alertbar-widget-row-light-bg').trim();
+
+      // Hide rows whose <span> is blank or "N/A"
+      body.querySelectorAll('.row-dark, .row-light').forEach(row => {
+
+        if (row.querySelector('#event-sender')) {
+          row.style.display = 'none';
+          return;           // don’t re-evaluate
+        }
+
+        if (row.querySelector('#event-issued-time')) {
+          row.style.display = 'none';
+          return;           // don’t re-evaluate
+        }
+
+        const span = row.querySelector('span');
+        const txt  = span ? span.textContent.trim().toUpperCase() : '';
+        row.style.display = (!txt || txt === 'N/A') ? 'none' : '';
+      });
+
+      // Re-stripe only the rows still visible
+      const visible = [...body.querySelectorAll('.row-dark, .row-light')]
+                      .filter(row => row.style.display !== 'none');
+
+      visible.forEach((row, index) => {
+        row.style.background = index % 2 === 0 ? darkBG : lightBG;
+      });
+    };
+
 }

@@ -1,15 +1,15 @@
 /*
                                             _               _     __   __
          /\  | |                           | |             (_)    \ \ / /
-        /  \ | |_ _ __ ___   ___  ___ _ __ | |__   ___ _ __ _  ___ \ V / 
-       / /\ \| __| '_ ` _ \ / _ \/ __| '_ \| '_ \ / _ \ '__| |/ __| > <  
-      / ____ \ |_| | | | | | (_) \__ \ |_) | | | |  __/ |  | | (__ / . \ 
+        /  \ | |_ _ __ ___   ___  ___ _ __ | |__   ___ _ __ _  ___ \ V /
+       / /\ \| __| '_ ` _ \ / _ \/ __| '_ \| '_ \ / _ \ '__| |/ __| > <
+      / ____ \ |_| | | | | | (_) \__ \ |_) | | | |  __/ |  | | (__ / . \
      /_/    \_\__|_| |_| |_|\___/|___/ .__/|_| |_|\___|_|  |_|\___/_/ \_\
-                                     | |                                 
-                                     |_|                                                                                                                
-    
+                                     | |
+                                     |_|
+
     Written by: k3yomi@GitHub
-    Version: v7.0.0                             
+    Version: v7.0.0
 */
 
 let loader = require(`./loader.js`)
@@ -31,7 +31,7 @@ return new Promise(async (resolve, reject) => {
             loader.modules.hooks.reloadConfigurations()
             loader.modules.hooks.cleanTemp()
             setTimeout(() => {
-                loader.cache.twire = {features: loader.cache.twire.features.filter(feature => feature !== undefined && new Date(feature.properties.expires).getTime() > new Date().getTime())} 
+                loader.cache.twire = {features: loader.cache.twire.features.filter(feature => feature !== undefined && new Date(feature.properties.expires).getTime() > new Date().getTime())}
                 loader.cache.logging = loader.cache.logging.filter(log => log !== undefined && new Date(log.expires).getTime() > new Date().getTime())
                 loader.modules.webcalling.nextRun(loader.cache.twire)
                 loader.modules.webcalling.nextRun()

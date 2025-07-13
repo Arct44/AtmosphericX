@@ -9,7 +9,7 @@
     <script src="../../assets/javascript/alerts.js"></script>
     <script src="../../assets/javascript/library.js"></script>
     <body>
-        <div id="notice_base" class="notice_base", style="display: none;">
+        <div id="notice_base" class="notice_base" style="display: none;">
             <div style="height: 50px; width: 400px;"><h1 class="notice_title" id="p_title"></h1></div>
             <div class="p_boxdark" style="height: 50px; width: 400px;"><h1 class="notice_subtitle" id="p_expires"></h1></div>
             <div class="p_boxlight" style="height: 80px; width: 400px;"><h1 class="notice_subtitle" id="p_locations"></h1></div>
@@ -25,31 +25,24 @@
             let alert_class = new Alerts(library)
             let element_class = new Elements(library)
 
-     
+
             document.addEventListener('onCacheUpdate', async (event) => {
-                alert_class.syncAlerts()
-                let warnings = [`Tornado Emergency`, `Confirmed Tornado Warning`, `Particularly Dangerous Situation`, `Radar Indicated Tornado Warning`, `Severe Thunderstorm Warning (Destructive)`];
-                let alert = null;
-                for (let warning of warnings) {
-                    let find = library.storage.active.find((alert) => alert.details.name == warning);
-                    if (find) {
-                        alert = find;
-                        break;
-                    }
-                }
-                if (alert) {
-                    document.getElementById('notice_base').style.display = 'block'
-                    document.getElementById('p_title').innerHTML = alert.details.name
-                    document.getElementById('p_expires').innerHTML = `EXPIRES: ${alert.details.expires}`
-                    document.getElementById('p_locations').innerHTML = `LOCATIONS: ${alert.details.locations}`
-                    document.getElementById('p_maxhail').innerHTML = `MAX HAIL: ${alert.details.hail}`
-                    document.getElementById('p_maxgusts').innerHTML = `MAX GUSTS: ${alert.details.wind}`
-                    document.getElementById('p_tortag').innerHTML = `TORNADO THREAT: ${alert.details.tornado}`
-                    document.getElementById('p_dmgtag').innerHTML = `DAMAGE THREAT: ${alert.details.damage}`
-                } else {
-                    document.getElementById('notice_base').style.display = 'none'
-                }
-                alert_class.triggerDynamicColors()
+              let alerts = alert_class.syncAlerts()
+              alerts.sort((a, b) => new Date(b.details.issued) - new Date(a.details.issued));
+              let alert = alerts[0]
+              if (alert) {
+                document.getElementById('notice_base').style.display = 'block'
+                document.getElementById('p_title').innerHTML = alert.details.name
+                document.getElementById('p_expires').innerHTML = `EXPIRES: ${alert.details.expires}`
+                document.getElementById('p_locations').innerHTML = `LOCATIONS: ${alert.details.locations}`
+                document.getElementById('p_maxhail').innerHTML = `MAX HAIL: ${alert.details.hail}`
+                document.getElementById('p_maxgusts').innerHTML = `MAX GUSTS: ${alert.details.wind}`
+                document.getElementById('p_tortag').innerHTML = `TORNADO THREAT: ${alert.details.tornado}`
+                document.getElementById('p_dmgtag').innerHTML = `DAMAGE THREAT: ${alert.details.damage}`
+              } else {
+                document.getElementById('notice_base').style.display = 'none'
+              }
+              // alert_class.triggerDynamicColors()
             })
         })
     </script>

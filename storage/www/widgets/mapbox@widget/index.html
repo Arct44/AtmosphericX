@@ -15,13 +15,17 @@
     <body>
         <div id="mapbox-container" class="mapbox-container"></div>
     </body>
-    <script>
+     <script>
         let parameter = window.location.href.split('?')[1] || false
         let library = new Library()
         library.createWebsocketSession([`realtime`, `public`, `active`, `manual`, `spotters`, `reports`]).then(() => {
-            let alert_class = new Alerts(library)
-            let mapbox_class = new Mapbox(library, parameter == `true` ? true : false)
-            mapbox_class.updateThread()
+
+            let mapbox_class;
+            let alert_class;
+
+            alert_class = new Alerts(library);
+            mapbox_class = new Mapbox(library, parameter ==  `true`, alert_class);
+
             document.addEventListener('onCacheUpdate', async (event) => {
                 alert_class.syncAlerts()
                 mapbox_class.updateThread()
