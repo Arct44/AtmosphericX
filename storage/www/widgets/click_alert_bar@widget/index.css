@@ -1,0 +1,83 @@
+/* ---------- Global ---------- */
+html, body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;          /* don’t scroll, this is a fixed widget */
+  font-family: sans-serif;   /* fallback – can change */
+}
+
+/* ---------- Alert Box ---------- */
+.click-alert-box {
+  /* POSITION – always stick to top‑right */
+  position: fixed;           /* take it out of normal flow */
+  top: 12px;                 /* distance from top edge */
+  right: 12px;               /* distance from right edge */
+
+  /* SIZE & LOOK */
+  max-width: 640px;          /* shrink left if long lines wrap */
+  width: auto;
+  background: var(--alertbar-widget-bg-gradient);
+  color:      var(--alertbar-widget-text-color);
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,0,0,.95);
+
+  /* Start hidden – JS sets display:block when needed */
+  display: none;
+  overflow: hidden;          /* keep rounded‑corner clipping */
+  font-size: 0.9rem;
+  z-index: 9999;             /* stay on top of other widgets */
+}
+
+/* ---------- Header ---------- */
+.click-alert-header {
+  background: var(--alertbar-widget-header-bg);
+  font-size: calc(var(--alertbar-widget-header-size) * 0.85);
+  font-weight: var(--alertbar-widget-header-weight);
+  text-align: center;
+  padding: 12px;             /* was 16px, slightly tighter */
+}
+
+/* ---------- Body & Rows ---------- */
+.click-alert-body {
+  background: var(--alertbar-widget-body-bg);
+}
+
+/* row containers */
+.click-row-light,
+.click-row-dark {
+  padding: 6px 12px;         /* was 8px 16px */
+  display: flex;
+  flex-direction: column;    /* stack label & value */
+  box-sizing: border-box;
+}
+
+/* alternating colours (will be pruned/striped by JS) */
+.click-row-light { background: var(--alertbar-widget-row-light-bg); }
+.click-row-dark  { background: var(--alertbar-widget-row-dark-bg); }
+
+/* inner wrappers that hold text / icons */
+.click-left,
+.click-right {
+  display: flex;
+  gap: 4px;                  /* was 6px */
+  align-items: flex-start;
+  flex: 1 1 100%;
+}
+
+/* ---------- Icon (if you ever add one) ---------- */
+.click-alert-icon {
+  width: 200px;
+  height: 200px;
+}
+
+/* ---------- Convenience: fade‑in animation ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* --------- Convenience: fade‑out animation --------- */
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0);     }
+  to   { opacity: 0; transform: translateY(-10px); }
+}

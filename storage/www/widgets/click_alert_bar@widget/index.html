@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+    <title>AtmosphericX</title>
+    <link rel="click-icon" href="/assets/media/dashboard/favicon.ico" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+    <link rel="stylesheet" href="./index.css">
+    <link rel="stylesheet" href="/assets/styles/variables.css">
+    <script src="/assets/javascript/library.js"></script>
+    <body>
+        <div class="click-alert-box">
+
+            <div class="click-alert-header"><span id="click-event-name"></span></div>
+
+            <div class="click-alert-body">
+
+                <div class="click-row-light"><div class="click-left"><div>COUNTIES: <span id="click-event-locations"></span></div></div></div>
+                <div class="click-row-dark"><div class="click-right"><div>ISSUED: <span id="click-event-issued-time"></span></div></div></div>
+                <div class="click-row-light"><div class="click-left">HAIL:    <span id="click-event-max-hail"></span></div></div>
+                <div class="click-row-light"><div class="click-left">WIND:    <span id="click-event-max-wind"></span></div></div>
+                <div class="click-row-light"><div class="click-left">TORNADO:     <span id="click-event-tornado"></span></div></div>
+                <div class="click-row-light"><div class="click-right">DAMAGE:     <span id="click-event-damage"></span></div></div>
+                <div class="click-row-light"><div class="click-right">EXPIRES: <span id="click-event-expires-time"></span></div></div>
+                <div class="click-row-dark"><div class="click-left"><div>OFFICE: <span id="click-event-sender"></span></div></div></div>
+                <div class="click-row-light"><div class="click-left"><div>TAGS: <span id="click-event-tags"></span></div></div></div>
+
+            </div>
+        </div>
+    </body>
+
+    <script>
+    const socket = new WebSocket('ws://localhost:8787');
+    let updateBox = null;
+    let hideBox   = null;
+
+    socket.addEventListener('message', async (event) => {
+      try {
+        const text = await event.data.text();
+        const msg  = JSON.parse(text);
+
+        if (msg.type === 'warning-click' && updateBox) {
+          updateBox(msg.data); // ✅ show box
+        }
+
+        if (msg.type === 'warning-hide' && hideBox) {
+          hideBox(); // ✅ hide box
+        }
+
+      } catch (err) {
+        console.error('WS JSON Parse Error:', err);
+      }
+    });
+    </script>
+
+
+
+    <script>
+    /* ------------------------------------------------------------------
+        click_alert_bar@widget
+        - listens for wx-click
+        - fills spans
+        - hides empty rows & re-stripes
+    ------------------------------------------------------------------- */
+    (() => {
+
+      /* -------- bindings: span ID -> payload key -------- */
+      const bindings = {
+        'click-event-name'        : 'title',
+        'click-event-locations'   : 'location',
+        'click-event-issued-time' : 'issuedAt',
+        'click-event-max-hail'    : 'hail',
+        'click-event-max-wind'    : 'wind',
+        'click-event-tornado'     : 'tornado',
+        'click-event-damage'      : 'damage',
+        'click-event-expires-time': 'expiresAt',
+        'click-event-sender'      : 'office',
+        'click-event-tags'        : 'tags',
+      };
+
+      const box   = document.querySelector('.click-alert-box');
+      const spans = Object.fromEntries(
+        Object.keys(bindings).map(id => [id, document.getElementById(id)])
+      );
+
+      /* -------------- helper copied from alerts.js -------------- */
+      function pruneRowsAndStripe() {
+        const body = document.querySelector('.click-alert-body');
+        if (!body) return;
+
+        const darkBG  = getComputedStyle(document.documentElement)
+                        .getPropertyValue('--alertbar-widget-row-dark-bg').trim();
+        const lightBG = getComputedStyle(document.documentElement)
+                        .getPropertyValue('--alertbar-widget-row-light-bg').trim();
+
+        body.querySelectorAll('.click-row-dark, .click-row-light').forEach(row => {
+
+          if (row.querySelector('#click-event-sender')) {
+            row.style.display = 'none';
+            return;           // don’t re-evaluate
+          }
+
+          /*
+          if (row.querySelector('#click-event-issued-time')) {
+            row.style.display = 'none';
+            return;           // don’t re-evaluate
+          }
+          */
+
+          const span = row.querySelector('span');
+          const txt  = span ? span.textContent.trim().toUpperCase() : '';
+          row.style.display = (!txt || txt === 'N/A') ? 'none' : '';
+        });
+
+        const visible = [...body.querySelectorAll('.click-row-dark, .click-row-light')]
+                        .filter(r => r.style.display !== 'none');
+
+        visible.forEach((row, i) => {
+          row.style.background = i % 2 === 0 ? darkBG : lightBG;
+        });
+      }
+      /* ----------------------------------------------------------- */
+
+      /* ===== pretty Central‑time “Mar 14, 1:45 PM” ===== */
+      function fmtIssued(iso) {
+        if (!iso) return 'N/A';
+        const d = new Date(iso);
+        if (isNaN(d)) return iso;
+
+        return d.toLocaleString('en-US', {          // or leave '' for browser locale
+          timeZone : 'America/Chicago',             // 🕘 Central Time
+          month    : 'short',
+          day      : 'numeric',
+          hour     : 'numeric',
+          minute   : '2-digit',
+          hour12   : true                           // 12‑hour clock
+        });
+      }
+
+      /* ===== remaining time “1 h 23 m” (never negative) ===== */
+      function fmtExpires(iso) {
+        if (!iso) return 'N/A';
+        const diff = new Date(iso) - Date.now();        // ms remaining
+        if (isNaN(diff)) return iso;
+
+        const totalMins = Math.max(0, Math.round(diff / 60000));  // floor 0
+        const h = Math.floor(totalMins / 60);
+        const m = totalMins % 60;
+        return h ? `${h} \u202FHour(s) and \u202F${m} \u202FMinute(s)`      // “2 h 07 m”
+                 : `${m} \u202FMinute(s)`;                // “17 m”
+      }
+
+      // Export updater for WebSocket handler above
+      updateBox = (w) => {
+        for (const [id, key] of Object.entries(bindings)) {
+          let val = w?.[key] ?? 'N/A';
+
+          if (key === 'issuedAt')  val = fmtIssued(val);
+          if (key === 'expiresAt') val = fmtExpires(val);
+
+          spans[id].textContent = val;
+        }
+
+        pruneRowsAndStripe();
+
+        box.style.display = 'block';
+        box.style.animation = 'fadeIn 0.4s ease-in';
+      };
+
+      hideBox = () => {
+        box.style.animation = 'fadeOut 0.4s ease-in forwards';
+
+        // after the animation completes, actually remove it from layout
+        setTimeout(() => {
+          box.style.display = 'none';
+        }, 400);
+      };
+
+    })();
+    </script>
+
+    <script>
+    const chan = new BroadcastChannel('wx-click');
+
+    chan.addEventListener('message', ev => {
+      if (ev.data?.type === 'warning-click' && updateBox) updateBox(ev.data.data);
+      if (ev.data?.type === 'warning-hide'  && hideBox)   hideBox();
+    });
+    </script>
+
+</html>
